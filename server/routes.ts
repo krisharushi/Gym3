@@ -13,16 +13,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      // For demo purposes, return mock user data
-      const user = {
-        id: userId,
-        email: req.user.claims.email,
-        firstName: "Demo",
-        lastName: "User",
-        profileImageUrl: null,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
+      
+      // Check if user exists in database, if not create them
+      let user = await storage.getUser(userId);
+      if (!user) {
+        user = await storage.upsertUser({
+          id: userId,
+          email: req.user.claims.email,
+          firstName: "Demo",
+          lastName: "User",
+          profileImageUrl: null,
+        });
+      }
+      
       res.json(user);
     } catch (error) {
       console.error("Error fetching user:", error);
@@ -57,15 +60,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create a new gym class
   app.post("/api/gym-classes", isAuthenticated, async (req: any, res) => {
     try {
+      console.log("Creating gym class with data:", req.body);
       const validatedData = insertGymClassSchema.parse(req.body);
+      console.log("Validated data:", validatedData);
       const userId = req.user.claims.sub;
+      console.log("User ID:", userId);
+      
+      // Ensure user exists in database before creating gym class
+      let user = await storage.getUser(userId);
+      if (!user) {
+        console.log("User not found, creating demo user");
+        user = await storage.upsertUser({
+          id: userId,
+          email: req.user.claims.email,
+          firstName: "Demo",
+          lastName: "User",
+          profileImageUrl: null,
+        });
+        console.log("Created user:", user);
+      }
+      
       const gymClass = await storage.createGymClass({ ...validatedData, userId });
+      console.log("Created gym class:", gymClass);
       res.status(201).json(gymClass);
     } catch (error) {
+      console.error("Error creating gym class:", error);
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid data", errors: error.errors });
       }
-      res.status(500).json({ message: "Failed to create gym class" });
+      res.status(500).json({ message: "Failed to create gym class", error: String(error) });
     }
   });
 

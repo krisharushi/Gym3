@@ -74,17 +74,17 @@ export default function Landing() {
         {/* Login Button */}
         <div className="pt-8">
           <Button
-            onClick={() => window.location.href = "/api/login"}
+            onClick={() => window.location.href = "/"}
             className="w-full bg-ios-blue hover:bg-blue-600 text-white py-4 rounded-xl font-semibold text-lg transition-all duration-200 active:scale-95"
           >
-            Sign In to Get Started
+            Get Started
           </Button>
         </div>
 
         {/* Info */}
         <div className="text-center pt-4">
           <p className="text-sm text-ios-gray">
-            Sign in with your account to start tracking your gym classes
+            Start tracking your gym classes immediately
           </p>
         </div>
       </main>

@@ -92,4 +92,11 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-export const storage = new DatabaseStorage();
+// Switch between database and memory storage for deployment
+// Use MemoryStorage for simple deployment without database setup
+import { MemoryStorage } from "./memoryStorage";
+
+// For deployment simplicity, always use MemoryStorage
+// This avoids database setup complexities and foreign key issues
+export const storage = new MemoryStorage();
+console.log("Using storage type:", storage.constructor.name);
